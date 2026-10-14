@@ -28,4 +28,30 @@ contract SimpleBank {
         (bool success, ) = payable(msg.sender).call{value: amount}("");
         require(success, "ETH transfer failed");
     }
+
+    function transferToBank(address from, address to, uint256 amount) public {
+        require(balances[from] >= amount, "Insufficient bank balance");
+        require(to != address(0), "Invalid recipient");
+
+        balances[from] -= amount;
+        balances[to] += amount;
+    }
+
+    function transferToWallet(address recipient, uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Insufficient bank balance");
+        require(recipient != address(0), "Invalid recipient");
+
+        balances[msg.sender] -= amount;
+
+        (bool success, ) = payable(recipient).call{value: amount}("");
+        require(success, "ETH transfer failed");
+    }
+
+    function getBankBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    receive() external payable {
+        balances[msg.sender] += msg.value;
+    }
 }
